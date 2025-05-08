@@ -2,7 +2,7 @@
 
 namespace WechatMiniProgramUrlLinkBundle\Event;
 
-use AppBundle\Entity\BizUser;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Contracts\EventDispatcher\Event;
 use WechatMiniProgramUrlLinkBundle\Entity\PromotionCode;
 
@@ -22,7 +22,7 @@ class PromotionCodeRequestEvent extends Event
 
     private PromotionCode $code;
 
-    private ?BizUser $user;
+    private ?UserInterface $user;
 
     public function getCode(): PromotionCode
     {
@@ -34,12 +34,12 @@ class PromotionCodeRequestEvent extends Event
         $this->code = $code;
     }
 
-    public function getUser(): ?BizUser
+    public function getUser(): ?UserInterface
     {
         return $this->user;
     }
 
-    public function setUser(?BizUser $user): void
+    public function setUser(?UserInterface $user): void
     {
         $this->user = $user;
     }
