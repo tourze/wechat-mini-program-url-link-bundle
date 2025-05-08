@@ -3,6 +3,7 @@
 namespace WechatMiniProgramUrlLinkBundle\Procedure;
 
 use Carbon\Carbon;
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -22,6 +23,7 @@ use WechatMiniProgramUrlLinkBundle\Repository\VisitLogRepository;
 #[MethodTag('微信小程序')]
 #[MethodDoc('获取小程序推广码配置信息')]
 #[MethodExpose('GetWechatMiniProgramPromotionCodeInfo')]
+#[WithMonologChannel('procedure')]
 class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
 {
     use LaunchOptionsAware;
@@ -35,7 +37,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
         private readonly DoctrineService $doctrineService,
         private readonly Security $security,
         private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly LoggerInterface $procedureLogger,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -76,7 +78,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
             try {
                 $this->doctrineService->asyncInsert($log);
             } catch (\Throwable $exception) {
-                $this->procedureLogger->error('保存记录时发生错误', [
+                $this->logger->error('保存记录时发生错误', [
                     'log' => $log,
                     'exception' => $exception,
                 ]);
@@ -97,7 +99,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
             try {
                 $this->doctrineService->asyncInsert($log);
             } catch (\Throwable $exception) {
-                $this->procedureLogger->error('保存记录时发生错误', [
+                $this->logger->error('保存记录时发生错误', [
                     'log' => $log,
                     'exception' => $exception,
                 ]);
@@ -139,7 +141,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
         try {
             $this->doctrineService->asyncInsert($log);
         } catch (\Throwable $exception) {
-            $this->procedureLogger->error('保存记录时发生错误', [
+            $this->logger->error('保存记录时发生错误', [
                 'log' => $log,
                 'exception' => $exception,
             ]);
