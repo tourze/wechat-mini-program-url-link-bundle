@@ -4,7 +4,6 @@ namespace WechatMiniProgramUrlLinkBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use DoctrineEnhanceBundle\Repository\CommonRepositoryAware;
 use WechatMiniProgramUrlLinkBundle\Entity\DailyStatus;
 
 /**
@@ -15,7 +14,6 @@ use WechatMiniProgramUrlLinkBundle\Entity\DailyStatus;
  */
 class DailyStatusRepository extends ServiceEntityRepository
 {
-    use CommonRepositoryAware;
 
     public function __construct(ManagerRegistry $registry)
     {

@@ -4,7 +4,6 @@ namespace WechatMiniProgramUrlLinkBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use DoctrineEnhanceBundle\Repository\CommonRepositoryAware;
 use WechatMiniProgramUrlLinkBundle\Entity\CodeRuleTag;
 
 /**
@@ -15,7 +14,6 @@ use WechatMiniProgramUrlLinkBundle\Entity\CodeRuleTag;
  */
 class CodeRuleTagRepository extends ServiceEntityRepository
 {
-    use CommonRepositoryAware;
 
     public function __construct(ManagerRegistry $registry)
     {
