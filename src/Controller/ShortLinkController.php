@@ -35,7 +35,7 @@ class ShortLinkController extends AbstractController
         DoctrineService $doctrineService,
         Client $client,
     ): Response {
-        $data = mb_substr($request->getUri(), mb_strpos($request->getUri(), '?'));
+        $data = substr($request->getUri(), strpos($request->getUri(), '?'));
         $data = trim($data, '?');
         $data = trim($data, '=');
         $data = trim($data, '#');
