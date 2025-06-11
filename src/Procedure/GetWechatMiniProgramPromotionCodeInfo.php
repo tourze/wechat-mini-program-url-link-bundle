@@ -7,7 +7,7 @@ use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
-use Tourze\DoctrineAsyncBundle\Service\DoctrineService;
+use Tourze\DoctrineAsyncInsertBundle\Service\AsyncInsertService;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodExpose;
 use Tourze\JsonRPC\Core\Attribute\MethodParam;
@@ -34,7 +34,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
     public function __construct(
         private readonly PromotionCodeRepository $promotionCodeRepository,
         private readonly VisitLogRepository $visitLogRepository,
-        private readonly DoctrineService $doctrineService,
+        private readonly AsyncInsertService $doctrineService,
         private readonly Security $security,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger,

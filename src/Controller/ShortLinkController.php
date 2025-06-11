@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Tourze\DoctrineAsyncBundle\Service\DoctrineService;
+use Tourze\DoctrineAsyncInsertBundle\Service\AsyncInsertService;
 use WechatMiniProgramBundle\Service\Client;
 use WechatMiniProgramUrlLinkBundle\Entity\UrlLink;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
@@ -32,7 +32,7 @@ class ShortLinkController extends AbstractController
         Request $request,
         LoggerInterface $logger,
         PromotionCodeRepository $promotionCodeRepository,
-        DoctrineService $doctrineService,
+        AsyncInsertService $doctrineService,
         Client $client,
     ): Response {
         $data = substr($request->getUri(), strpos($request->getUri(), '?'));
