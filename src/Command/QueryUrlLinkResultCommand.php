@@ -19,7 +19,9 @@ use WechatMiniProgramUrlLinkBundle\Service\UrlLinkService;
 #[AsCommand(name: 'wechat-mini-program:query-url-link-result', description: '批量查询UrlLink的点击结果')]
 class QueryUrlLinkResultCommand extends Command
 {
-    public function __construct(
+    
+    public const NAME = 'wechat-mini-program:query-url-link-result';
+public function __construct(
         private readonly UrlLinkRepository $linkRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly UrlLinkService $urlLinkService,

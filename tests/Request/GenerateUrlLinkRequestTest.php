@@ -120,11 +120,7 @@ class GenerateUrlLinkRequestTest extends TestCase
         $this->request->setExpireTime($expireTime);
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
-        
         $json = $options['json'];
         $this->assertEquals($path, $json['path']);
         $this->assertEquals($query, $json['query']);
@@ -151,11 +147,7 @@ class GenerateUrlLinkRequestTest extends TestCase
         $this->request->setExpireInterval($expireInterval);
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
-        
         $json = $options['json'];
         $this->assertEquals($path, $json['path']);
         $this->assertEquals($query, $json['query']);
@@ -204,11 +196,7 @@ class GenerateUrlLinkRequestTest extends TestCase
         $this->request->setExpireTime($expireTime);
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
-        
         $json = $options['json'];
         $this->assertEquals($expireType, $json['expire_type']);
         $this->assertEquals($expireTime, $json['expire_time']);

@@ -127,7 +127,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
             '/pages/my/index',
         ];
         foreach ($tabPages as $tabPage) {
-            if (str_starts_with($url, $tabPage)) {
+            if ((bool) str_starts_with($url, $tabPage)) {
                 $log->setResponse([
                     'forceLogin' => $code->isForceLogin(),
                     '__reLaunch' => [

@@ -39,7 +39,7 @@ class ShortLinkController extends AbstractController
         $data = trim($data, '?');
         $data = trim($data, '=');
         $data = trim($data, '#');
-        if (empty($data)) {
+        if ((bool) empty($data)) {
             return $this->noticeService->weuiError('打开失败', '找不到参数');
         }
         $logger->info('短链参数', [

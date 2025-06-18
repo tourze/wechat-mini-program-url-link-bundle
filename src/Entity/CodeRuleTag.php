@@ -10,25 +10,12 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Creatable;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Action\Editable;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use WechatMiniProgramUrlLinkBundle\Repository\CodeRuleTagRepository;
 
-#[AsPermission(title: '推广码规则标签')]
-#[Deletable]
-#[Editable]
-#[Creatable]
 #[ORM\Entity(repositoryClass: CodeRuleTagRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_code_rule_tag', options: ['comment' => '推广码规则标签'])]
 class CodeRuleTag implements \Stringable
 {
-    #[ListColumn(order: -1)]
-    #[ExportColumn]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
@@ -41,21 +28,13 @@ class CodeRuleTag implements \Stringable
     use TimestampableAware;
 
     #[CreatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
     private ?string $createdBy = null;
 
     #[UpdatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
     private ?string $updatedBy = null;
 
-    #[FormField]
-    #[ListColumn]
-    #[ORM\Column(length: 100, options: ['comment' => '名称'])]
     private ?string $name = null;
 
-    #[FormField]
-    #[ListColumn]
-    #[ORM\Column(length: 100, unique: true, options: ['comment' => '编码'])]
     private ?string $code = null;
 
     #[Ignore]

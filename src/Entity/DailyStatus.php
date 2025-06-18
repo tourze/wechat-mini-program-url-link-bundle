@@ -4,22 +4,17 @@ namespace WechatMiniProgramUrlLinkBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Stringable;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use WechatMiniProgramUrlLinkBundle\Repository\DailyStatusRepository;
 
-#[AsPermission(title: '推广码访问记录统计')]
 #[ORM\Entity(repositoryClass: DailyStatusRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_daily_status', options: ['comment' => '推广码访问记录统计'])]
-class DailyStatus
+class DailyStatus implements Stringable
 {
     use TimestampableAware;
 
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -30,7 +25,7 @@ class DailyStatus
     #[ORM\JoinColumn(nullable: false)]
     private ?PromotionCode $code = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, options: ['comment' => '统计日期'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, options: ['comment' => '统计日期'])]
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(options: ['comment' => '数量'])]
@@ -75,5 +70,10 @@ class DailyStatus
         $this->total = $total;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->id;
     }
 }

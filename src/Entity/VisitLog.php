@@ -4,31 +4,25 @@ namespace WechatMiniProgramUrlLinkBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Stringable;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
 use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
 use WechatMiniProgramBundle\Enum\EnvVersion;
 use WechatMiniProgramUrlLinkBundle\Repository\VisitLogRepository;
 
 #[AsScheduleClean(expression: '14 3 * * *', defaultKeepDay: 90, keepDayEnv: 'PROMOTION_VISIT_LOG_PERSIST_DAY_NUM')]
-#[AsPermission(title: '推广码访问记录')]
 #[ORM\Entity(repositoryClass: VisitLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_visit_log', options: ['comment' => '推广码访问记录'])]
-class VisitLog
+class VisitLog implements Stringable
 {
     use TimestampableAware;
     use LaunchOptionsAware;
 
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
@@ -39,12 +33,9 @@ class VisitLog
     #[ORM\JoinColumn(nullable: false)]
     private ?PromotionCode $code = null;
 
-    #[FormField(span: 6)]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 30, nullable: true, enumType: EnvVersion::class, options: ['default' => 'release', 'comment' => '打开版本'])]
     private ?EnvVersion $envVersion = null;
 
-    #[ORM\Column(type: Types::JSON)]
+#[ORM\Column(type: Types::JSON, options: ['comment' => '字段说明'])]
     private array $response = [];
 
     #[ORM\ManyToOne(targetEntity: UserInterface::class)]
@@ -52,11 +43,9 @@ class VisitLog
     private ?UserInterface $user = null;
 
     #[CreateIpColumn]
-    #[ORM\Column(type: Types::STRING, length: 128, nullable: true, options: ['comment' => '创建者IP'])]
     private ?string $createdFromIp = null;
 
     #[UpdateIpColumn]
-    #[ORM\Column(type: Types::STRING, length: 128, nullable: true, options: ['comment' => '更新者IP'])]
     private ?string $updatedFromIp = null;
 
     public function getId(): ?string
@@ -134,5 +123,10 @@ class VisitLog
         $this->updatedFromIp = $updatedFromIp;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->id;
     }
 }

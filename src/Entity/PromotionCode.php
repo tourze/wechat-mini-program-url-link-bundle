@@ -11,7 +11,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\Arrayable\AdminArrayInterface;
-use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineSnowflakeBundle\Attribute\SnowflakeColumn;
@@ -19,82 +18,47 @@ use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
 use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Action\Creatable;
-use Tourze\EasyAdmin\Attribute\Action\Deletable;
-use Tourze\EasyAdmin\Attribute\Action\Editable;
-use Tourze\EasyAdmin\Attribute\Column\BoolColumn;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
 use Tourze\EasyAdmin\Attribute\Column\ImportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
 use Tourze\EasyAdmin\Attribute\Column\PictureColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Filter\Keyword;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Enum\EnvVersion;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 
-#[AsPermission(title: '推广码')]
-#[Deletable]
-#[Editable]
-#[Creatable]
 #[ORM\Entity(repositoryClass: PromotionCodeRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_code', options: ['comment' => '推广码'])]
 class PromotionCode implements AdminArrayInterface
 {
     use TimestampableAware;
-    #[ListColumn(order: -1)]
-    #[ExportColumn]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
     private ?int $id = 0;
 
-    #[FormField(title: '小程序')]
-    #[ListColumn(title: '小程序')]
     #[ORM\ManyToOne(targetEntity: Account::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Account $account = null;
 
-    #[FormField(span: 14)]
-    #[Keyword]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 100, options: ['comment' => '名称'])]
     private ?string $name = null;
 
-    #[FormField(span: 10)]
     #[SnowflakeColumn(length: 10)]
-    #[ORM\Column(type: Types::STRING, length: 64, unique: true, options: ['comment' => '唯一码'])]
     private ?string $code = '';
 
-    #[FormField]
-    #[Keyword]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 2000, options: ['comment' => '推广链接'])]
     private ?string $linkUrl = null;
 
     #[PictureColumn]
-    #[ListColumn]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '推广码'])]
     private ?string $imageUrl = null;
 
-    #[FormField(span: 10, showExpression: "env('SHOW_PROMOTION_START')")]
     #[ImportColumn]
-    #[ListColumn(showExpression: "env('SHOW_PROMOTION_START')")]
     #[Groups(['restful_read', 'admin_curd'])]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '开始时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始时间'])]
     private ?\DateTimeInterface $startTime = null;
 
-    #[FormField(span: 10, showExpression: "env('SHOW_PROMOTION_END')")]
     #[ImportColumn]
-    #[ListColumn(showExpression: "env('SHOW_PROMOTION_END')")]
     #[Groups(['restful_read', 'admin_curd'])]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '结束时间'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '结束时间'])]
     private ?\DateTimeInterface $endTime = null;
 
-    #[FormField(span: 6)]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 30, nullable: true, enumType: EnvVersion::class, options: ['default' => 'release', 'comment' => '打开版本'])]
     private ?EnvVersion $envVersion = null;
 
     /**
@@ -104,9 +68,6 @@ class PromotionCode implements AdminArrayInterface
     #[ORM\OneToMany(mappedBy: 'code', targetEntity: VisitLog::class, orphanRemoval: true)]
     private Collection $visitLogs;
 
-    #[FormField]
-    #[ListColumn]
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['default' => '0', 'comment' => '强制授权'])]
     private ?bool $forceLogin = null;
 
     /**
@@ -114,44 +75,28 @@ class PromotionCode implements AdminArrayInterface
      *
      * @var Collection<CodeRule>
      */
-    #[FormField(title: '额外规则')]
     #[ORM\OneToMany(mappedBy: 'promotionCodeRule', targetEntity: CodeRule::class, cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true)]
     private Collection $rules;
 
-    #[ListColumn(tooltipDesc: '有效期30天')]
-    #[ORM\Column(length: 255, nullable: true, options: ['comment' => '短链(临时)'])]
     private ?string $shortLinkTemp = null;
 
-    #[ListColumn]
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true, options: ['comment' => '短链生成时间'])]
     private ?\DateTimeInterface $shortLinkTempCreateTime = null;
 
-    #[ListColumn(tooltipDesc: '每个小程序只能生成10万次')]
-    #[ORM\Column(length: 255, nullable: true, options: ['comment' => '短链(永久)'])]
     private ?string $shortLinkPermanent = null;
 
-    #[BoolColumn]
-    #[IndexColumn]
     #[TrackColumn]
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
-    #[ListColumn(order: 97)]
-    #[FormField(order: 97)]
     private ?bool $valid = false;
 
     #[CreatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '创建人'])]
     private ?string $createdBy = null;
 
     #[UpdatedByColumn]
-    #[ORM\Column(nullable: true, options: ['comment' => '更新人'])]
     private ?string $updatedBy = null;
 
     #[CreateIpColumn]
-    #[ORM\Column(type: Types::STRING, length: 128, nullable: true, options: ['comment' => '创建者IP'])]
     private ?string $createdFromIp = null;
 
     #[UpdateIpColumn]
-    #[ORM\Column(type: Types::STRING, length: 128, nullable: true, options: ['comment' => '更新者IP'])]
     private ?string $updatedFromIp = null;
 
     public function __construct()
@@ -237,7 +182,6 @@ class PromotionCode implements AdminArrayInterface
         return $this;
     }
 
-    #[ListColumn(title: 'H5外链')]
     public function renderShortLink(UrlGeneratorInterface $urlGenerator): string
     {
         return $urlGenerator->generate('wechat-mini-program-promotion-short-link', [], UrlGeneratorInterface::ABSOLUTE_URL) . '?' . $this->getCode();

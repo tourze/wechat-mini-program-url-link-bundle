@@ -37,7 +37,7 @@ class UrlLinkService
             return;
         }
 
-        if (isset($response['visit_openid'])) {
+        if ((bool) isset($response['visit_openid'])) {
             $urlLink->setVisitOpenId($response['visit_openid']);
         }
 

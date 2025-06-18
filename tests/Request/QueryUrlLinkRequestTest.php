@@ -43,10 +43,7 @@ class QueryUrlLinkRequestTest extends TestCase
         $this->request->setUrlLink($urlLink);
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
         $this->assertArrayHasKey('url_link', $options['json']);
         $this->assertEquals($urlLink, $options['json']['url_link']);
     }
@@ -59,10 +56,7 @@ class QueryUrlLinkRequestTest extends TestCase
         $this->request->setUrlLink('');
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
         $this->assertArrayHasKey('url_link', $options['json']);
         $this->assertEquals('', $options['json']['url_link']);
     }
@@ -76,10 +70,7 @@ class QueryUrlLinkRequestTest extends TestCase
         $this->request->setUrlLink($urlLink);
         
         $options = $this->request->getRequestOptions();
-        
-        $this->assertIsArray($options);
         $this->assertArrayHasKey('json', $options);
-        $this->assertIsArray($options['json']);
         $this->assertArrayHasKey('url_link', $options['json']);
         $this->assertEquals($urlLink, $options['json']['url_link']);
     }

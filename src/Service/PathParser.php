@@ -23,21 +23,21 @@ class PathParser implements PathParserInterface
         // 后台活动码的取参逻辑
         if ('pages/redirect/index' === trim($path, '/') && (isset($query['scene']) || isset($query['id']))) {
             $code = null;
-            if (isset($query['scene'])) {
+            if ((bool) isset($query['scene'])) {
                 $code = $this->promotionCodeRepository->findOneBy([
                     'id' => $query['scene'],
                     'valid' => true,
                 ]);
             }
 
-            if (!$code && isset($query['id'])) {
+            if (!$code && (bool) isset($query['id'])) {
                 $code = $this->promotionCodeRepository->findOneBy([
                     'id' => $query['id'],
                     'valid' => true,
                 ]);
             }
             // 目前肯定是整形的
-            if ($code) {
+            if ((bool) $code) {
                 // 解析和判断是否有s参数，有的话就直接取用
                 $tmp = parse_url($code->getLinkUrl());
                 $_query = $tmp['query'] ?? '';

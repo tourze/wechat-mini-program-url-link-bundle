@@ -167,7 +167,7 @@ class UrlLinkTest extends TestCase
      */
     public function testSetAndGetCreateTime_storesAndReturnsValue(): void
     {
-        $createTime = new \DateTime();
+        $createTime = new \DateTimeImmutable();
         
         $this->urlLink->setCreateTime($createTime);
         
@@ -179,7 +179,7 @@ class UrlLinkTest extends TestCase
      */
     public function testSetAndGetUpdateTime_storesAndReturnsValue(): void
     {
-        $updateTime = new \DateTime();
+        $updateTime = new \DateTimeImmutable();
         
         $this->urlLink->setUpdateTime($updateTime);
         

@@ -18,7 +18,9 @@ use WechatMiniProgramUrlLinkBundle\Repository\VisitLogRepository;
 #[AsCommand(name: 'wechat-mini-program:count-promotion-daily-status', description: '定期统计推广码的访问数量')]
 class CountPromotionDailyStatusCommand extends Command
 {
-    public function __construct(
+    
+    public const NAME = 'wechat-mini-program:count-promotion-daily-status';
+public function __construct(
         private readonly VisitLogRepository $visitLogRepository,
         private readonly PromotionCodeRepository $codeRepository,
         private readonly DailyStatusRepository $dailyStatusRepository,
@@ -43,14 +45,14 @@ class CountPromotionDailyStatusCommand extends Command
         foreach ($list as $value) {
             // $output->writeln("更新统计，{$value['code']}, {$value['total']}");
             $code = $this->codeRepository->find($value['code']);
-            if (empty($code)) {
+            if ((bool) empty($code)) {
                 continue;
             }
             $status = $this->dailyStatusRepository->findOneBy([
                 'code' => $code,
                 'date' => $date,
             ]);
-            if (empty($status)) {
+            if ((bool) empty($status)) {
                 $status = new DailyStatus();
                 $status->setCode($code);
                 $status->setDate($date);

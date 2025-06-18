@@ -4,15 +4,12 @@ namespace WechatMiniProgramUrlLinkBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Stringable;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\EasyAdmin\Attribute\Column\ExportColumn;
-use Tourze\EasyAdmin\Attribute\Column\ListColumn;
-use Tourze\EasyAdmin\Attribute\Field\FormField;
-use Tourze\EasyAdmin\Attribute\Permission\AsPermission;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Enum\EnvVersion;
 use WechatMiniProgramUrlLinkBundle\Repository\UrlLinkRepository;
@@ -20,30 +17,22 @@ use WechatMiniProgramUrlLinkBundle\Repository\UrlLinkRepository;
 /**
  * 这里记录的是微信短链的打开记录
  */
-#[AsPermission(title: '推广码UrlLink')]
 #[ORM\Entity(repositoryClass: UrlLinkRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_url_link', options: ['comment' => '推广码UrlLink'])]
-class UrlLink
+class UrlLink implements Stringable
 {
     use TimestampableAware;
 
-    #[ExportColumn]
-    #[ListColumn(order: -1, sorter: true)]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
     #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
     private ?string $id = null;
 
-    #[FormField(title: '小程序')]
-    #[ListColumn(title: '小程序')]
     #[ORM\ManyToOne(targetEntity: Account::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Account $account = null;
 
-    #[FormField(span: 6)]
-    #[ListColumn]
-    #[ORM\Column(type: Types::STRING, length: 30, nullable: true, enumType: EnvVersion::class, options: ['default' => 'release', 'comment' => '打开版本'])]
     private ?EnvVersion $envVersion = null;
 
     #[ORM\Column(type: Types::STRING, length: 150, unique: true, options: ['comment' => 'Url Link'])]
@@ -62,15 +51,12 @@ class UrlLink
     private ?string $visitOpenId = null;
 
     #[IndexColumn]
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否已检查'])]
     private ?bool $checked = false;
 
     #[CreateIpColumn]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => '创建时IP'])]
     private ?string $createdFromIp = null;
 
     #[UpdateIpColumn]
-    #[ORM\Column(length: 128, nullable: true, options: ['comment' => '更新时IP'])]
     private ?string $updatedFromIp = null;
 
     public function getId(): ?string
@@ -196,5 +182,10 @@ class UrlLink
         $this->updatedFromIp = $updatedFromIp;
 
         return $this;
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->id;
     }
 }
