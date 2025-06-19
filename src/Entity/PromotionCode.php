@@ -27,7 +27,7 @@ use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 #[ORM\Entity(repositoryClass: PromotionCodeRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_code', options: ['comment' => '推广码'])]
 class PromotionCode implements AdminArrayInterface
-{
+, \Stringable{
     use TimestampableAware;
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -398,5 +398,10 @@ class PromotionCode implements AdminArrayInterface
             'createdFromIp' => $this->getCreatedFromIp(),
             'updatedFromIp' => $this->getUpdatedFromIp(),
         ];
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->getId();
     }
 }
