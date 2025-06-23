@@ -2,7 +2,7 @@
 
 namespace WechatMiniProgramUrlLinkBundle\Controller;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,7 +28,7 @@ class ShortLinkController extends AbstractController
      * @see https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/url-link.html
      */
     #[Route('/t.htm', name: 'wechat-mini-program-promotion-short-link')]
-    public function revokeCallback(
+    public function __invoke(
         Request $request,
         LoggerInterface $logger,
         PromotionCodeRepository $promotionCodeRepository,
@@ -39,7 +39,7 @@ class ShortLinkController extends AbstractController
         $data = trim($data, '?');
         $data = trim($data, '=');
         $data = trim($data, '#');
-        if ((bool) empty($data)) {
+        if (empty($data)) {
             return $this->noticeService->weuiError('打开失败', '找不到参数');
         }
         $logger->info('短链参数', [
@@ -47,13 +47,13 @@ class ShortLinkController extends AbstractController
         ]);
 
         $code = $promotionCodeRepository->findOneBy(['code' => $data]);
-        if (!$code) {
+        if (null === $code) {
             return $this->noticeService->weuiError('打开失败', '找不到推广码');
         }
 
         // 活动时间内有效
         if (!empty($code->getStartTime()) && !empty($code->getEndTime())) {
-            $now = Carbon::now();
+            $now = CarbonImmutable::now();
             if ($code->getStartTime() > $now || $code->getEndTime() < $now) {
                 return $this->noticeService->weuiError('打开失败', '找不到推广码');
             }

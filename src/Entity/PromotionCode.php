@@ -16,10 +16,7 @@ use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
 use Tourze\DoctrineSnowflakeBundle\Attribute\SnowflakeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
-use Tourze\EasyAdmin\Attribute\Column\ImportColumn;
-use Tourze\EasyAdmin\Attribute\Column\PictureColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Enum\EnvVersion;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
@@ -41,20 +38,17 @@ class PromotionCode implements AdminArrayInterface
     private ?string $name = null;
 
     #[SnowflakeColumn(length: 10)]
-    private ?string $code = '';
+    private string $code = '';
 
     private ?string $linkUrl = null;
 
-    #[PictureColumn]
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '推广码'])]
     private ?string $imageUrl = null;
 
-    #[ImportColumn]
     #[Groups(['restful_read', 'admin_curd'])]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始时间'])]
     private ?\DateTimeInterface $startTime = null;
 
-    #[ImportColumn]
     #[Groups(['restful_read', 'admin_curd'])]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '结束时间'])]
     private ?\DateTimeInterface $endTime = null;
@@ -86,12 +80,7 @@ class PromotionCode implements AdminArrayInterface
 
     #[TrackColumn]
     private ?bool $valid = false;
-
-    #[CreatedByColumn]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    private ?string $updatedBy = null;
+    use BlameableAware;
 
     #[CreateIpColumn]
     private ?string $createdFromIp = null;
@@ -110,7 +99,7 @@ class PromotionCode implements AdminArrayInterface
         return $this->id;
     }
 
-    public function getCode(): ?string
+    public function getCode(): string
     {
         return $this->code;
     }
@@ -331,29 +320,7 @@ class PromotionCode implements AdminArrayInterface
         return $this;
     }
 
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
 
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
 
     public function getCreatedFromIp(): ?string
     {

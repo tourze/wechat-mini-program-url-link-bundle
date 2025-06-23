@@ -2,7 +2,7 @@
 
 namespace WechatMiniProgramUrlLinkBundle\Command;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -15,11 +15,11 @@ use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 use WechatMiniProgramUrlLinkBundle\Repository\VisitLogRepository;
 
 #[AsCronTask('*/10 * * * *')]
-#[AsCommand(name: 'wechat-mini-program:count-promotion-daily-status', description: '定期统计推广码的访问数量')]
+#[AsCommand(name: self::NAME, description: '定期统计推广码的访问数量')]
 class CountPromotionDailyStatusCommand extends Command
 {
-    
     public const NAME = 'wechat-mini-program:count-promotion-daily-status';
+    
 public function __construct(
         private readonly VisitLogRepository $visitLogRepository,
         private readonly PromotionCodeRepository $codeRepository,
@@ -32,12 +32,12 @@ public function __construct(
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $date = Carbon::now()->startOfDay();
+        $date = CarbonImmutable::now()->startOfDay();
         $list = $this->visitLogRepository->createQueryBuilder('v')
             ->select('count(v.id) as total, identity(v.code) as code')
             ->where('v.createTime between :start and :end')
-            ->setParameter('start', Carbon::today()->startOfDay())
-            ->setParameter('end', Carbon::today()->endOfDay())
+            ->setParameter('start', CarbonImmutable::today()->startOfDay())
+            ->setParameter('end', CarbonImmutable::today()->endOfDay())
             ->groupBy('v.code')
             ->getQuery()
             ->getResult();
@@ -45,14 +45,14 @@ public function __construct(
         foreach ($list as $value) {
             // $output->writeln("更新统计，{$value['code']}, {$value['total']}");
             $code = $this->codeRepository->find($value['code']);
-            if ((bool) empty($code)) {
+            if (null === $code) {
                 continue;
             }
             $status = $this->dailyStatusRepository->findOneBy([
                 'code' => $code,
                 'date' => $date,
             ]);
-            if ((bool) empty($status)) {
+            if (null === $status) {
                 $status = new DailyStatus();
                 $status->setCode($code);
                 $status->setDate($date);

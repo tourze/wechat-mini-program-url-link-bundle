@@ -2,7 +2,7 @@
 
 namespace WechatMiniProgramUrlLinkBundle\Procedure;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -18,7 +18,6 @@ use WechatMiniProgramBundle\Procedure\LaunchOptionsAware;
 use WechatMiniProgramUrlLinkBundle\Entity\VisitLog;
 use WechatMiniProgramUrlLinkBundle\Event\PromotionCodeRequestEvent;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
-use WechatMiniProgramUrlLinkBundle\Repository\VisitLogRepository;
 
 #[MethodTag('微信小程序')]
 #[MethodDoc('获取小程序推广码配置信息')]
@@ -33,7 +32,6 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
 
     public function __construct(
         private readonly PromotionCodeRepository $promotionCodeRepository,
-        private readonly VisitLogRepository $visitLogRepository,
         private readonly DoctrineService $doctrineService,
         private readonly Security $security,
         private readonly EventDispatcherInterface $eventDispatcher,
@@ -44,13 +42,13 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
     public function execute(): array
     {
         $code = $this->promotionCodeRepository->find($this->id);
-        if (!$code) {
+        if (null === $code) {
             throw new ApiException('找不到推广码');
         }
 
         // 活动时间内有效
         if (!empty($code->getStartTime()) && !empty($code->getEndTime())) {
-            $now = Carbon::now();
+            $now = CarbonImmutable::now();
             if ($code->getStartTime() > $now || $code->getEndTime() < $now) {
                 throw new ApiException('活动已结束', 1001);
             }
@@ -62,7 +60,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
         $log->setEnvVersion($code->getEnvVersion());
         $log->setLaunchOptions($this->launchOptions);
         $log->setEnterOptions($this->enterOptions);
-        if ($this->security->getUser()) {
+        if (null !== $this->security->getUser()) {
             $log->setUser($this->security->getUser());
         }
 
@@ -127,7 +125,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
             '/pages/my/index',
         ];
         foreach ($tabPages as $tabPage) {
-            if ((bool) str_starts_with($url, $tabPage)) {
+            if (str_starts_with($url, $tabPage)) {
                 $log->setResponse([
                     'forceLogin' => $code->isForceLogin(),
                     '__reLaunch' => [

@@ -8,8 +8,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use WechatMiniProgramUrlLinkBundle\Repository\CodeRuleTagRepository;
 
 #[ORM\Entity(repositoryClass: CodeRuleTagRepository::class)]
@@ -26,12 +25,7 @@ class CodeRuleTag implements \Stringable
         return $this->id;
     }
     use TimestampableAware;
-
-    #[CreatedByColumn]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    private ?string $updatedBy = null;
+    use BlameableAware;
 
     private ?string $name = null;
 
@@ -48,36 +42,13 @@ class CodeRuleTag implements \Stringable
 
     public function __toString()
     {
-        if (!$this->id) {
+        if (null === $this->id || 0 === $this->id) {
             return '';
         }
 
         return $this->getName();
     }
 
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
 
     public function getName(): ?string
     {

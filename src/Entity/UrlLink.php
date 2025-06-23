@@ -51,7 +51,7 @@ class UrlLink implements Stringable
     private ?string $visitOpenId = null;
 
     #[IndexColumn]
-    private ?bool $checked = false;
+    private bool $checked = false;
 
     #[CreateIpColumn]
     private ?string $createdFromIp = null;

@@ -117,15 +117,4 @@ class PathParserTest extends TestCase
         $this->assertSame($expectedLink, $result);
     }
 
-    /**
-     * 创建模拟的 PromotionCode 对象
-     */
-    private function createPromotionCodeMock(string $linkUrl): PromotionCode
-    {
-        $promotionCode = $this->createMock(PromotionCode::class);
-        $promotionCode->expects($this->once())
-            ->method('getLinkUrl')
-            ->willReturn($linkUrl);
-        return $promotionCode;
-    }
 } 

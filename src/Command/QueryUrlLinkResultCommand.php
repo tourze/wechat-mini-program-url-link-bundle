@@ -2,7 +2,7 @@
 
 namespace WechatMiniProgramUrlLinkBundle\Command;
 
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -16,11 +16,11 @@ use WechatMiniProgramUrlLinkBundle\Repository\UrlLinkRepository;
 use WechatMiniProgramUrlLinkBundle\Service\UrlLinkService;
 
 #[AsCronTask('*/10 * * * *')]
-#[AsCommand(name: 'wechat-mini-program:query-url-link-result', description: '批量查询UrlLink的点击结果')]
+#[AsCommand(name: self::NAME, description: '批量查询UrlLink的点击结果')]
 class QueryUrlLinkResultCommand extends Command
 {
-    
     public const NAME = 'wechat-mini-program:query-url-link-result';
+    
 public function __construct(
         private readonly UrlLinkRepository $linkRepository,
         private readonly EntityManagerInterface $entityManager,
@@ -44,7 +44,7 @@ public function __construct(
             ->getQuery()
             ->toIterable();
         foreach ($urlLinks as $urlLink) {
-            $diff = Carbon::now()->diffInMinutes($urlLink->getCreateTime());
+            $diff = CarbonImmutable::now()->diffInMinutes($urlLink->getCreateTime());
             $diff = abs($diff);
             if ($diff > $input->getArgument('minute')) {
                 $output->writeln("短链{$urlLink->getId()}已超时{$diff}分钟，不再检查了");

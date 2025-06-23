@@ -57,9 +57,7 @@ class GenerateUrlLinkRequest extends WithAccountRequest
         if (null !== $this->getQuery()) {
             $json['query'] = $this->getQuery();
         }
-        if (null !== $this->getEnvVersion()) {
-            $json['env_version'] = $this->getEnvVersion();
-        }
+        $json['env_version'] = $this->getEnvVersion();
 
         if (0 === $json['expire_type']) {
             if (null === $this->getExpireTime()) {

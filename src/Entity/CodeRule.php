@@ -8,8 +8,7 @@ use Stringable;
 use Symfony\Component\Serializer\Attribute\Ignore;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
-use Tourze\DoctrineUserBundle\Attribute\CreatedByColumn;
-use Tourze\DoctrineUserBundle\Attribute\UpdatedByColumn;
+use Tourze\DoctrineUserBundle\Traits\BlameableAware;
 use WechatMiniProgramUrlLinkBundle\Repository\CodeRuleRepository;
 
 #[ORM\Entity(repositoryClass: CodeRuleRepository::class)]
@@ -26,12 +25,7 @@ class CodeRule implements Stringable
         return $this->id;
     }
     use TimestampableAware;
-
-    #[CreatedByColumn]
-    private ?string $createdBy = null;
-
-    #[UpdatedByColumn]
-    private ?string $updatedBy = null;
+    use BlameableAware;
 
     #[TrackColumn]
     private ?bool $valid = false;
@@ -46,29 +40,6 @@ class CodeRule implements Stringable
     #[ORM\JoinColumn(onDelete: 'CASCADE')]
     private ?PromotionCode $promotionCodeRule = null;
 
-    public function setCreatedBy(?string $createdBy): self
-    {
-        $this->createdBy = $createdBy;
-
-        return $this;
-    }
-
-    public function getCreatedBy(): ?string
-    {
-        return $this->createdBy;
-    }
-
-    public function setUpdatedBy(?string $updatedBy): self
-    {
-        $this->updatedBy = $updatedBy;
-
-        return $this;
-    }
-
-    public function getUpdatedBy(): ?string
-    {
-        return $this->updatedBy;
-    }
 
     public function isValid(): ?bool
     {
