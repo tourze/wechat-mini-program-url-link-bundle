@@ -19,15 +19,15 @@ use WechatMiniProgramUrlLinkBundle\Entity\VisitLog;
 use WechatMiniProgramUrlLinkBundle\Event\PromotionCodeRequestEvent;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 
-#[MethodTag('微信小程序')]
-#[MethodDoc('获取小程序推广码配置信息')]
-#[MethodExpose('GetWechatMiniProgramPromotionCodeInfo')]
-#[WithMonologChannel('procedure')]
+#[MethodTag(name: '微信小程序')]
+#[MethodDoc(summary: '获取小程序推广码配置信息')]
+#[MethodExpose(method: 'GetWechatMiniProgramPromotionCodeInfo')]
+#[WithMonologChannel(channel: 'procedure')]
 class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
 {
     use LaunchOptionsAware;
 
-    #[MethodParam('活动ID')]
+    #[MethodParam(description: '活动ID')]
     public int $id;
 
     public function __construct(

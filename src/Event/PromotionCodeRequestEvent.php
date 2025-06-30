@@ -22,7 +22,7 @@ class PromotionCodeRequestEvent extends Event
 
     private PromotionCode $code;
 
-    private ?UserInterface $user;
+    private ?UserInterface $user = null;
 
     public function getCode(): PromotionCode
     {

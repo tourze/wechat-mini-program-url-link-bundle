@@ -5,7 +5,7 @@ namespace WechatMiniProgramUrlLinkBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Stringable;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use WechatMiniProgramUrlLinkBundle\Repository\DailyStatusRepository;
 
@@ -14,12 +14,7 @@ use WechatMiniProgramUrlLinkBundle\Repository\DailyStatusRepository;
 class DailyStatus implements Stringable
 {
     use TimestampableAware;
-
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[ORM\ManyToOne(targetEntity: PromotionCode::class, inversedBy: 'visitLogs')]
     #[ORM\JoinColumn(nullable: false)]
@@ -31,10 +26,6 @@ class DailyStatus implements Stringable
     #[ORM\Column(options: ['comment' => '数量'])]
     private ?int $total = null;
 
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
 
     public function getCode(): ?PromotionCode
     {

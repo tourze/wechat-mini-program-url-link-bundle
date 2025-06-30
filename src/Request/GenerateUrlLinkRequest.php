@@ -3,6 +3,7 @@
 namespace WechatMiniProgramUrlLinkBundle\Request;
 
 use WechatMiniProgramBundle\Request\WithAccountRequest;
+use WechatMiniProgramUrlLinkBundle\Exception\InvalidRequestParameterException;
 
 /**
  * 获取小程序 URL Link，适用于短信、邮件、网页、微信内等拉起小程序的业务场景。目前仅针对国内非个人主体的小程序开放，详见获取 URL Link
@@ -61,14 +62,14 @@ class GenerateUrlLinkRequest extends WithAccountRequest
 
         if (0 === $json['expire_type']) {
             if (null === $this->getExpireTime()) {
-                throw new \InvalidArgumentException('expire_type 为 0 时，expire_time 必填');
+                throw new InvalidRequestParameterException('expire_type 为 0 时，expire_time 必填');
             }
             $json['expire_time'] = $this->getExpireTime();
         }
 
         if (1 === $json['expire_type']) {
             if (null === $this->getExpireInterval()) {
-                throw new \InvalidArgumentException('expire_type 为 1 时，expire_interval 必填');
+                throw new InvalidRequestParameterException('expire_type 为 1 时，expire_interval 必填');
             }
             $json['expire_interval'] = $this->getExpireInterval();
         }

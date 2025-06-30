@@ -8,7 +8,7 @@ use Stringable;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
 use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
-use Tourze\DoctrineSnowflakeBundle\Service\SnowflakeIdGenerator;
+use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
 use WechatMiniProgramBundle\Entity\LaunchOptionsAware;
@@ -22,12 +22,7 @@ class VisitLog implements Stringable
 {
     use TimestampableAware;
     use LaunchOptionsAware;
-
-    #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(SnowflakeIdGenerator::class)]
-    #[ORM\Column(type: Types::BIGINT, nullable: false, options: ['comment' => 'ID'])]
-    private ?string $id = null;
+    use SnowflakeKeyAware;
 
     #[ORM\ManyToOne(targetEntity: PromotionCode::class, inversedBy: 'visitLogs')]
     #[ORM\JoinColumn(nullable: false)]
@@ -48,10 +43,6 @@ class VisitLog implements Stringable
     #[UpdateIpColumn]
     private ?string $updatedFromIp = null;
 
-    public function getId(): ?string
-    {
-        return $this->id;
-    }
 
     public function getEnvVersion(): ?EnvVersion
     {

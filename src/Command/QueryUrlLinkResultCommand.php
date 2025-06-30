@@ -15,7 +15,7 @@ use WechatMiniProgramUrlLinkBundle\Entity\UrlLink;
 use WechatMiniProgramUrlLinkBundle\Repository\UrlLinkRepository;
 use WechatMiniProgramUrlLinkBundle\Service\UrlLinkService;
 
-#[AsCronTask('*/10 * * * *')]
+#[AsCronTask(expression: '*/10 * * * *')]
 #[AsCommand(name: self::NAME, description: '批量查询UrlLink的点击结果')]
 class QueryUrlLinkResultCommand extends Command
 {

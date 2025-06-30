@@ -27,7 +27,7 @@ class ShortLinkController extends AbstractController
     /**
      * @see https://developers.weixin.qq.com/miniprogram/dev/framework/open-ability/url-link.html
      */
-    #[Route('/t.htm', name: 'wechat-mini-program-promotion-short-link')]
+    #[Route(path: '/t.htm', name: 'wechat-mini-program-promotion-short-link')]
     public function __invoke(
         Request $request,
         LoggerInterface $logger,

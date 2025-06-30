@@ -14,7 +14,7 @@ use WechatMiniProgramUrlLinkBundle\Repository\DailyStatusRepository;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 use WechatMiniProgramUrlLinkBundle\Repository\VisitLogRepository;
 
-#[AsCronTask('*/10 * * * *')]
+#[AsCronTask(expression: '*/10 * * * *')]
 #[AsCommand(name: self::NAME, description: '定期统计推广码的访问数量')]
 class CountPromotionDailyStatusCommand extends Command
 {
