@@ -47,6 +47,9 @@ class GenerateUrlLinkRequest extends WithAccountRequest
         return '/wxa/generate_urllink';
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getRequestOptions(): ?array
     {
         $json = [

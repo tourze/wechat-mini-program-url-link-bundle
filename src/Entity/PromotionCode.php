@@ -2,99 +2,114 @@
 
 namespace WechatMiniProgramUrlLinkBundle\Entity;
 
-use AntdCpBundle\Builder\Field\DynamicFieldSet;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Serializer\Attribute\Ignore;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\Arrayable\AdminArrayInterface;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineSnowflakeBundle\Attribute\SnowflakeColumn;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\DoctrineTrackBundle\Attribute\TrackColumn;
 use Tourze\DoctrineUserBundle\Traits\BlameableAware;
-use WechatMiniProgramBundle\Entity\Account;
+use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use WechatMiniProgramBundle\Enum\EnvVersion;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 
+/**
+ * @implements AdminArrayInterface<string, mixed>
+ */
 #[ORM\Entity(repositoryClass: PromotionCodeRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_code', options: ['comment' => '推广码'])]
-class PromotionCode implements AdminArrayInterface
-, \Stringable{
+class PromotionCode implements AdminArrayInterface, \Stringable
+{
     use TimestampableAware;
+    use BlameableAware;
+    use IpTraceableAware;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: Types::INTEGER, options: ['comment' => 'ID'])]
-    private ?int $id = 0;
+    private int $id = 0;
 
-    #[ORM\ManyToOne(targetEntity: Account::class)]
+    #[ORM\ManyToOne(targetEntity: MiniProgramInterface::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
-    private ?Account $account = null;
+    private ?MiniProgramInterface $account = null;
 
+    #[ORM\Column(type: Types::STRING, length: 100, options: ['comment' => '名称'])]
+    #[Assert\NotBlank(message: '名称不能为空')]
+    #[Assert\Length(max: 100)]
     private ?string $name = null;
 
     #[SnowflakeColumn(length: 10)]
+    #[ORM\Column(type: Types::STRING, length: 64, unique: true, options: ['comment' => '唯一码'])]
+    #[Assert\NotBlank(message: '唯一编码不能为空')]
+    #[Assert\Length(max: 64)]
     private string $code = '';
 
+    /**
+     * @var string|null 这里的推广链接，是微信小程序上用的，所以不是标准的URL
+     */
+    #[ORM\Column(type: Types::STRING, length: 2000, options: ['comment' => '推广链接'])]
+    #[Assert\NotBlank(message: '推广链接不能为空')]
+    #[Assert\Length(max: 2000)]
+    #[Assert\Url]
     private ?string $linkUrl = null;
 
     #[ORM\Column(type: Types::STRING, length: 255, nullable: true, options: ['comment' => '推广码'])]
+    #[Assert\Length(max: 255)]
+    #[Assert\Url]
     private ?string $imageUrl = null;
 
-    #[Groups(groups: ['restful_read', 'admin_curd'])]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '开始时间'])]
+    #[Assert\Type(type: '\DateTimeInterface')]
     private ?\DateTimeInterface $startTime = null;
 
-    #[Groups(groups: ['restful_read', 'admin_curd'])]
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '结束时间'])]
+    #[Assert\Type(type: '\DateTimeInterface')]
     private ?\DateTimeInterface $endTime = null;
 
+    #[ORM\Column(type: Types::STRING, length: 30, nullable: true, enumType: EnvVersion::class, options: ['default' => 'release', 'comment' => '打开版本'])]
+    #[Assert\Choice(callback: [EnvVersion::class, 'cases'])]
     private ?EnvVersion $envVersion = null;
 
     /**
-     * @var Collection<VisitLog>
+     * @var Collection<int, VisitLog>
      */
     #[Ignore]
-    #[ORM\OneToMany(mappedBy: 'code', targetEntity: VisitLog::class, orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: VisitLog::class, mappedBy: 'code', orphanRemoval: true)]
     private Collection $visitLogs;
 
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['default' => '0', 'comment' => '强制授权'])]
+    #[Assert\Type(type: 'bool')]
     private ?bool $forceLogin = null;
 
-    /**
-     * @DynamicFieldSet()
-     *
-     * @var Collection<CodeRule>
-     */
-    #[ORM\OneToMany(mappedBy: 'promotionCodeRule', targetEntity: CodeRule::class, cascade: ['persist'], fetch: 'EXTRA_LAZY', orphanRemoval: true)]
-    private Collection $rules;
-
+    #[ORM\Column(length: 255, nullable: true, options: ['comment' => '短链(临时)'])]
+    #[Assert\Length(max: 255)]
     private ?string $shortLinkTemp = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, options: ['comment' => '短链生成时间'])]
+    #[Assert\Type(type: '\DateTimeInterface')]
     private ?\DateTimeInterface $shortLinkTempCreateTime = null;
 
+    #[ORM\Column(length: 255, nullable: true, options: ['comment' => '短链(永久)'])]
+    #[Assert\Length(max: 255)]
     private ?string $shortLinkPermanent = null;
 
     #[TrackColumn]
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '有效', 'default' => 0])]
+    #[Assert\Type(type: 'bool')]
     private ?bool $valid = false;
-    use BlameableAware;
-
-    #[CreateIpColumn]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    private ?string $updatedFromIp = null;
 
     public function __construct()
     {
         $this->visitLogs = new ArrayCollection();
-        $this->rules = new ArrayCollection();
     }
 
-    public function getId(): ?int
+    public function getId(): int
     {
         return $this->id;
     }
@@ -104,23 +119,19 @@ class PromotionCode implements AdminArrayInterface
         return $this->code;
     }
 
-    public function setCode(string $code): self
+    public function setCode(string $code): void
     {
         $this->code = $code;
-
-        return $this;
     }
 
-    public function getAccount(): ?Account
+    public function getAccount(): ?MiniProgramInterface
     {
         return $this->account;
     }
 
-    public function setAccount(?Account $account): self
+    public function setAccount(?MiniProgramInterface $account): void
     {
         $this->account = $account;
-
-        return $this;
     }
 
     public function getName(): ?string
@@ -128,11 +139,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     public function getLinkUrl(): ?string
@@ -140,11 +149,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->linkUrl;
     }
 
-    public function setLinkUrl(string $linkUrl): self
+    public function setLinkUrl(string $linkUrl): void
     {
         $this->linkUrl = $linkUrl;
-
-        return $this;
     }
 
     public function getEnvVersion(): ?EnvVersion
@@ -152,11 +159,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->envVersion;
     }
 
-    public function setEnvVersion(?EnvVersion $envVersion): self
+    public function setEnvVersion(?EnvVersion $envVersion): void
     {
         $this->envVersion = $envVersion;
-
-        return $this;
     }
 
     public function getImageUrl(): ?string
@@ -164,11 +169,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->imageUrl;
     }
 
-    public function setImageUrl(?string $imageUrl): self
+    public function setImageUrl(?string $imageUrl): void
     {
         $this->imageUrl = $imageUrl;
-
-        return $this;
     }
 
     public function renderShortLink(UrlGeneratorInterface $urlGenerator): string
@@ -184,17 +187,15 @@ class PromotionCode implements AdminArrayInterface
         return $this->visitLogs;
     }
 
-    public function addVisitLog(VisitLog $visitLog): self
+    public function addVisitLog(VisitLog $visitLog): void
     {
         if (!$this->visitLogs->contains($visitLog)) {
-            $this->visitLogs[] = $visitLog;
+            $this->visitLogs->add($visitLog);
             $visitLog->setCode($this);
         }
-
-        return $this;
     }
 
-    public function removeVisitLog(VisitLog $visitLog): self
+    public function removeVisitLog(VisitLog $visitLog): void
     {
         if ($this->visitLogs->removeElement($visitLog)) {
             // set the owning side to null (unless already changed)
@@ -202,8 +203,6 @@ class PromotionCode implements AdminArrayInterface
                 $visitLog->setCode(null);
             }
         }
-
-        return $this;
     }
 
     public function isForceLogin(): ?bool
@@ -211,11 +210,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->forceLogin;
     }
 
-    public function setForceLogin(bool $forceLogin): self
+    public function setForceLogin(bool $forceLogin): void
     {
         $this->forceLogin = $forceLogin;
-
-        return $this;
     }
 
     public function getStartTime(): ?\DateTimeInterface
@@ -223,11 +220,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->startTime;
     }
 
-    public function setStartTime(?\DateTimeInterface $startTime): self
+    public function setStartTime(?\DateTimeInterface $startTime): void
     {
         $this->startTime = $startTime;
-
-        return $this;
     }
 
     public function getEndTime(): ?\DateTimeInterface
@@ -235,41 +230,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->endTime;
     }
 
-    public function setEndTime(?\DateTimeInterface $endTime): self
+    public function setEndTime(?\DateTimeInterface $endTime): void
     {
         $this->endTime = $endTime;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, CodeRule>
-     */
-    public function getRules(): Collection
-    {
-        return $this->rules;
-    }
-
-    public function addRule(CodeRule $rule): static
-    {
-        if (!$this->rules->contains($rule)) {
-            $this->rules->add($rule);
-            $rule->setPromotionCodeRule($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRule(CodeRule $rule): static
-    {
-        if ($this->rules->removeElement($rule)) {
-            // set the owning side to null (unless already changed)
-            if ($rule->getPromotionCodeRule() === $this) {
-                $rule->setPromotionCodeRule(null);
-            }
-        }
-
-        return $this;
     }
 
     public function getShortLinkPermanent(): ?string
@@ -277,11 +240,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->shortLinkPermanent;
     }
 
-    public function setShortLinkPermanent(?string $shortLinkPermanent): static
+    public function setShortLinkPermanent(?string $shortLinkPermanent): void
     {
         $this->shortLinkPermanent = $shortLinkPermanent;
-
-        return $this;
     }
 
     public function getShortLinkTemp(): ?string
@@ -289,11 +250,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->shortLinkTemp;
     }
 
-    public function setShortLinkTemp(?string $shortLinkTemp): static
+    public function setShortLinkTemp(?string $shortLinkTemp): void
     {
         $this->shortLinkTemp = $shortLinkTemp;
-
-        return $this;
     }
 
     public function getShortLinkTempCreateTime(): ?\DateTimeInterface
@@ -301,11 +260,9 @@ class PromotionCode implements AdminArrayInterface
         return $this->shortLinkTempCreateTime;
     }
 
-    public function setShortLinkTempCreateTime(?\DateTimeInterface $shortLinkTempCreateTime): static
+    public function setShortLinkTempCreateTime(?\DateTimeInterface $shortLinkTempCreateTime): void
     {
         $this->shortLinkTempCreateTime = $shortLinkTempCreateTime;
-
-        return $this;
     }
 
     public function isValid(): ?bool
@@ -313,38 +270,15 @@ class PromotionCode implements AdminArrayInterface
         return $this->valid;
     }
 
-    public function setValid(?bool $valid): self
+    public function setValid(?bool $valid): void
     {
         $this->valid = $valid;
-
-        return $this;
     }
 
-
-
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): self
-    {
-        $this->createdFromIp = $createdFromIp;
-
-        return $this;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): self
-    {
-        $this->updatedFromIp = $updatedFromIp;
-
-        return $this;
-    }public function retrieveAdminArray(): array
+    /**
+     * @return array<string, mixed>
+     */
+    public function retrieveAdminArray(): array
     {
         return [
             'id' => $this->getId(),

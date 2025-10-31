@@ -3,7 +3,6 @@
 namespace WechatMiniProgramUrlLinkBundle\Command;
 
 use Carbon\CarbonImmutable;
-use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -20,8 +19,8 @@ use WechatMiniProgramUrlLinkBundle\Service\UrlLinkService;
 class QueryUrlLinkResultCommand extends Command
 {
     public const NAME = 'wechat-mini-program:query-url-link-result';
-    
-public function __construct(
+
+    public function __construct(
         private readonly UrlLinkRepository $linkRepository,
         private readonly EntityManagerInterface $entityManager,
         private readonly UrlLinkService $urlLinkService,
@@ -37,24 +36,35 @@ public function __construct(
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $limitArg = $input->getArgument('limit');
+        $minuteArg = $input->getArgument('minute');
+
+        $limit = is_string($limitArg) || is_numeric($limitArg) ? intval($limitArg) : 500;
+        $minute = is_string($minuteArg) || is_numeric($minuteArg) ? intval($minuteArg) : 60;
+
         $urlLinks = $this->linkRepository->createQueryBuilder('a')
             ->where('a.checked = false')
-            ->orderBy('a.id', Criteria::ASC)
-            ->setMaxResults(intval($input->getArgument('limit'))) // 单次只处理部分数据
+            ->orderBy('a.id', 'ASC')
+            ->setMaxResults($limit) // 单次只处理部分数据
             ->getQuery()
-            ->toIterable();
+            ->toIterable()
+        ;
+
+        /** @var UrlLink $urlLink */
         foreach ($urlLinks as $urlLink) {
+            // PHPStan已确定$urlLink为UrlLink类型，无需instanceof检查
+
             $diff = CarbonImmutable::now()->diffInMinutes($urlLink->getCreateTime());
             $diff = abs($diff);
-            if ($diff > $input->getArgument('minute')) {
+            if ($diff > $minute) {
                 $output->writeln("短链{$urlLink->getId()}已超时{$diff}分钟，不再检查了");
                 $urlLink->setChecked(true);
                 $this->entityManager->persist($urlLink);
                 $this->entityManager->flush();
                 $this->entityManager->detach($urlLink);
+                continue;
             }
 
-            /* @var UrlLink $urlLink */
             $output->writeln("正在处理短链：{$urlLink->getId()}");
 
             $this->urlLinkService->apiCheck($urlLink);

@@ -3,17 +3,24 @@
 namespace WechatMiniProgramUrlLinkBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Service\Client;
 use WechatMiniProgramUrlLinkBundle\Entity\UrlLink;
+use WechatMiniProgramUrlLinkBundle\Exception\InvalidAccountException;
+use WechatMiniProgramUrlLinkBundle\Exception\InvalidRequestParameterException;
 use WechatMiniProgramUrlLinkBundle\Request\QueryUrlLinkRequest;
 
-class UrlLinkService
+#[Autoconfigure(public: true)]
+#[WithMonologChannel(channel: 'wechat_mini_program_url_link')]
+readonly class UrlLinkService
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
-        private readonly EntityManagerInterface $entityManager,
-        private readonly Client $client,
+        private LoggerInterface $logger,
+        private EntityManagerInterface $entityManager,
+        private Client $client,
     ) {
     }
 
@@ -23,8 +30,16 @@ class UrlLinkService
     public function apiCheck(UrlLink $urlLink): void
     {
         $request = new QueryUrlLinkRequest();
-        $request->setAccount($urlLink->getAccount());
-        $request->setUrlLink($urlLink->getUrlLink());
+        $account = $urlLink->getAccount();
+        if (!$account instanceof Account) {
+            throw new InvalidAccountException();
+        }
+        $request->setAccount($account);
+        $urlLinkValue = $urlLink->getUrlLink();
+        if (null === $urlLinkValue) {
+            throw new InvalidRequestParameterException('URL Link 值不能为空');
+        }
+        $request->setUrlLink($urlLinkValue);
 
         try {
             $response = $this->client->request($request);
@@ -37,7 +52,7 @@ class UrlLinkService
             return;
         }
 
-        if ((bool) isset($response['visit_openid'])) {
+        if (is_array($response) && isset($response['visit_openid']) && is_string($response['visit_openid'])) {
             $urlLink->setVisitOpenId($response['visit_openid']);
         }
 

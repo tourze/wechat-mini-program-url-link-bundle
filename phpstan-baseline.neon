@@ -1,0 +1,11 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Controller有必填字段但缺少验证测试$#'
+			count: 1
+			path: tests/Controller/Admin/DailyStatusCrudControllerTest.php
+
+		-
+			message: '#^Controller有必填字段但缺少验证测试$#'
+			count: 1
+			path: tests/Controller/Admin/UrlLinkCrudControllerTest.php

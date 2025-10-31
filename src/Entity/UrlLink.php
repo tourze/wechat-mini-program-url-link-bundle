@@ -4,13 +4,12 @@ namespace WechatMiniProgramUrlLinkBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
+use Symfony\Component\Validator\Constraints as Assert;
 use Tourze\DoctrineIndexedBundle\Attribute\IndexColumn;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
-use WechatMiniProgramBundle\Entity\Account;
+use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use WechatMiniProgramBundle\Enum\EnvVersion;
 use WechatMiniProgramUrlLinkBundle\Repository\UrlLinkRepository;
 
@@ -19,52 +18,58 @@ use WechatMiniProgramUrlLinkBundle\Repository\UrlLinkRepository;
  */
 #[ORM\Entity(repositoryClass: UrlLinkRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_url_link', options: ['comment' => '推广码UrlLink'])]
-class UrlLink implements Stringable
+class UrlLink implements \Stringable
 {
     use TimestampableAware;
     use SnowflakeKeyAware;
+    use IpTraceableAware;
 
-    #[ORM\ManyToOne(targetEntity: Account::class)]
+    #[ORM\ManyToOne(targetEntity: MiniProgramInterface::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
-    private ?Account $account = null;
+    private ?MiniProgramInterface $account = null;
 
+    #[ORM\Column(type: Types::STRING, length: 30, nullable: true, enumType: EnvVersion::class, options: ['default' => 'release', 'comment' => '打开版本'])]
+    #[Assert\Choice(callback: [EnvVersion::class, 'cases'])]
     private ?EnvVersion $envVersion = null;
 
     #[ORM\Column(type: Types::STRING, length: 150, unique: true, options: ['comment' => 'Url Link'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 150)]
+    #[Assert\Url]
     private ?string $urlLink = null;
 
     #[ORM\Column(type: Types::STRING, length: 1000, nullable: true, options: ['comment' => '打开路径'])]
+    #[Assert\Length(max: 1000)]
     private ?string $path = null;
 
     #[ORM\Column(type: Types::STRING, length: 1000, nullable: true, options: ['comment' => '打开参数'])]
+    #[Assert\Length(max: 1000)]
     private ?string $query = null;
 
+    /**
+     * @var array<string, mixed>|null
+     */
     #[ORM\Column(type: Types::JSON, nullable: true, options: ['comment' => '原始数据'])]
+    #[Assert\Type(type: 'array')]
     private ?array $rawData = [];
 
     #[ORM\Column(type: Types::STRING, length: 70, nullable: true, options: ['comment' => '访问者OpenId'])]
+    #[Assert\Length(max: 70)]
     private ?string $visitOpenId = null;
 
     #[IndexColumn]
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否已检查'])]
+    #[Assert\Type(type: 'bool')]
     private bool $checked = false;
 
-    #[CreateIpColumn]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    private ?string $updatedFromIp = null;
-
-
-    public function getAccount(): ?Account
+    public function getAccount(): ?MiniProgramInterface
     {
         return $this->account;
     }
 
-    public function setAccount(?Account $account): self
+    public function setAccount(?MiniProgramInterface $account): void
     {
         $this->account = $account;
-
-        return $this;
     }
 
     public function getEnvVersion(): ?EnvVersion
@@ -72,11 +77,9 @@ class UrlLink implements Stringable
         return $this->envVersion;
     }
 
-    public function setEnvVersion(?EnvVersion $envVersion): self
+    public function setEnvVersion(?EnvVersion $envVersion): void
     {
         $this->envVersion = $envVersion;
-
-        return $this;
     }
 
     public function getPath(): ?string
@@ -84,11 +87,9 @@ class UrlLink implements Stringable
         return $this->path;
     }
 
-    public function setPath(?string $path): self
+    public function setPath(?string $path): void
     {
         $this->path = $path;
-
-        return $this;
     }
 
     public function getQuery(): ?string
@@ -96,11 +97,9 @@ class UrlLink implements Stringable
         return $this->query;
     }
 
-    public function setQuery(?string $query): self
+    public function setQuery(?string $query): void
     {
         $this->query = $query;
-
-        return $this;
     }
 
     public function getUrlLink(): ?string
@@ -108,23 +107,25 @@ class UrlLink implements Stringable
         return $this->urlLink;
     }
 
-    public function setUrlLink(string $urlLink): self
+    public function setUrlLink(string $urlLink): void
     {
         $this->urlLink = $urlLink;
-
-        return $this;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getRawData(): ?array
     {
         return $this->rawData;
     }
 
-    public function setRawData(?array $rawData): self
+    /**
+     * @param array<string, mixed>|null $rawData
+     */
+    public function setRawData(?array $rawData): void
     {
         $this->rawData = $rawData;
-
-        return $this;
     }
 
     public function getVisitOpenId(): ?string
@@ -132,47 +133,19 @@ class UrlLink implements Stringable
         return $this->visitOpenId;
     }
 
-    public function setVisitOpenId(?string $visitOpenId): self
+    public function setVisitOpenId(?string $visitOpenId): void
     {
         $this->visitOpenId = $visitOpenId;
-
-        return $this;
     }
 
-    public function isChecked(): ?bool
+    public function isChecked(): bool
     {
         return $this->checked;
     }
 
-    public function setChecked(bool $checked): self
+    public function setChecked(bool $checked): void
     {
         $this->checked = $checked;
-
-        return $this;
-    }
-
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): self
-    {
-        $this->createdFromIp = $createdFromIp;
-
-        return $this;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): self
-    {
-        $this->updatedFromIp = $updatedFromIp;
-
-        return $this;
     }
 
     public function __toString(): string

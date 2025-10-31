@@ -19,8 +19,8 @@ use WechatMiniProgramUrlLinkBundle\Repository\VisitLogRepository;
 class CountPromotionDailyStatusCommand extends Command
 {
     public const NAME = 'wechat-mini-program:count-promotion-daily-status';
-    
-public function __construct(
+
+    public function __construct(
         private readonly VisitLogRepository $visitLogRepository,
         private readonly PromotionCodeRepository $codeRepository,
         private readonly DailyStatusRepository $dailyStatusRepository,
@@ -33,6 +33,7 @@ public function __construct(
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $date = CarbonImmutable::now()->startOfDay();
+        /** @var array<array{total: int, code: int}> $list */
         $list = $this->visitLogRepository->createQueryBuilder('v')
             ->select('count(v.id) as total, identity(v.code) as code')
             ->where('v.createTime between :start and :end')
@@ -40,9 +41,12 @@ public function __construct(
             ->setParameter('end', CarbonImmutable::today()->endOfDay())
             ->groupBy('v.code')
             ->getQuery()
-            ->getResult();
+            ->getResult()
+        ;
 
         foreach ($list as $value) {
+            // PHPStan已确定$value为array{total: int, code: int}类型，无需额外检查
+
             // $output->writeln("更新统计，{$value['code']}, {$value['total']}");
             $code = $this->codeRepository->find($value['code']);
             if (null === $code) {
@@ -57,8 +61,10 @@ public function __construct(
                 $status->setCode($code);
                 $status->setDate($date);
             }
-            if ($value['total'] > $status->getTotal()) {
-                $status->setTotal($value['total']);
+
+            $totalValue = (int) $value['total'];
+            if ($totalValue > $status->getTotal()) {
+                $status->setTotal($totalValue);
                 $this->entityManager->persist($status);
                 $this->entityManager->flush();
                 $output->writeln("更新统计，{$code->getId()}, {$status->getTotal()}");

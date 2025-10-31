@@ -4,10 +4,9 @@ namespace WechatMiniProgramUrlLinkBundle\Entity;
 
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Stringable;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Tourze\DoctrineIpBundle\Attribute\CreateIpColumn;
-use Tourze\DoctrineIpBundle\Attribute\UpdateIpColumn;
+use Symfony\Component\Validator\Constraints as Assert;
+use Tourze\DoctrineIpBundle\Traits\IpTraceableAware;
 use Tourze\DoctrineSnowflakeBundle\Traits\SnowflakeKeyAware;
 use Tourze\DoctrineTimestampBundle\Traits\TimestampableAware;
 use Tourze\ScheduleEntityCleanBundle\Attribute\AsScheduleClean;
@@ -18,42 +17,40 @@ use WechatMiniProgramUrlLinkBundle\Repository\VisitLogRepository;
 #[AsScheduleClean(expression: '14 3 * * *', defaultKeepDay: 90, keepDayEnv: 'PROMOTION_VISIT_LOG_PERSIST_DAY_NUM')]
 #[ORM\Entity(repositoryClass: VisitLogRepository::class)]
 #[ORM\Table(name: 'wechat_mini_program_promotion_visit_log', options: ['comment' => '推广码访问记录'])]
-class VisitLog implements Stringable
+class VisitLog implements \Stringable
 {
     use TimestampableAware;
     use LaunchOptionsAware;
     use SnowflakeKeyAware;
+    use IpTraceableAware;
 
     #[ORM\ManyToOne(targetEntity: PromotionCode::class, inversedBy: 'visitLogs')]
     #[ORM\JoinColumn(nullable: false)]
     private ?PromotionCode $code = null;
 
+    #[ORM\Column(type: Types::STRING, length: 30, nullable: true, enumType: EnvVersion::class, options: ['default' => 'release', 'comment' => '打开版本'])]
+    #[Assert\Choice(callback: [EnvVersion::class, 'cases'])]
     private ?EnvVersion $envVersion = null;
 
-#[ORM\Column(type: Types::JSON, options: ['comment' => '字段说明'])]
+    /**
+     * @var array<string, mixed>
+     */
+    #[ORM\Column(type: Types::JSON, options: ['comment' => '字段说明'])]
+    #[Assert\Type(type: 'array')]
     private array $response = [];
 
     #[ORM\ManyToOne(targetEntity: UserInterface::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?UserInterface $user = null;
 
-    #[CreateIpColumn]
-    private ?string $createdFromIp = null;
-
-    #[UpdateIpColumn]
-    private ?string $updatedFromIp = null;
-
-
     public function getEnvVersion(): ?EnvVersion
     {
         return $this->envVersion;
     }
 
-    public function setEnvVersion(?EnvVersion $envVersion): self
+    public function setEnvVersion(?EnvVersion $envVersion): void
     {
         $this->envVersion = $envVersion;
-
-        return $this;
     }
 
     public function getCode(): ?PromotionCode
@@ -61,23 +58,25 @@ class VisitLog implements Stringable
         return $this->code;
     }
 
-    public function setCode(?PromotionCode $code): self
+    public function setCode(?PromotionCode $code): void
     {
         $this->code = $code;
-
-        return $this;
     }
 
-    public function getResponse(): ?array
+    /**
+     * @return array<string, mixed>
+     */
+    public function getResponse(): array
     {
         return $this->response;
     }
 
-    public function setResponse(array $response): self
+    /**
+     * @param array<string, mixed> $response
+     */
+    public function setResponse(array $response): void
     {
         $this->response = $response;
-
-        return $this;
     }
 
     public function getUser(): ?UserInterface
@@ -85,35 +84,9 @@ class VisitLog implements Stringable
         return $this->user;
     }
 
-    public function setUser(?UserInterface $user): self
+    public function setUser(?UserInterface $user): void
     {
         $this->user = $user;
-
-        return $this;
-    }
-
-    public function getCreatedFromIp(): ?string
-    {
-        return $this->createdFromIp;
-    }
-
-    public function setCreatedFromIp(?string $createdFromIp): self
-    {
-        $this->createdFromIp = $createdFromIp;
-
-        return $this;
-    }
-
-    public function getUpdatedFromIp(): ?string
-    {
-        return $this->updatedFromIp;
-    }
-
-    public function setUpdatedFromIp(?string $updatedFromIp): self
-    {
-        $this->updatedFromIp = $updatedFromIp;
-
-        return $this;
     }
 
     public function __toString(): string

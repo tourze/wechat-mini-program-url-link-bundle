@@ -9,8 +9,6 @@ services:
     resource: '../../Command/'
   WechatMiniProgramUrlLinkBundle\Controller\:
     resource: '../../Controller/'
-  WechatMiniProgramUrlLinkBundle\EventSubscriber\:
-    resource: '../../EventSubscriber/'
   WechatMiniProgramUrlLinkBundle\Procedure\:
     resource: '../../Procedure/'
   WechatMiniProgramUrlLinkBundle\Repository\:
