@@ -47,7 +47,7 @@
     "tourze/doctrine-track-bundle": "1.0.*",
     "tourze/doctrine-user-bundle": "1.0.*",
     "tourze/easy-admin-menu-bundle": "1.0.*",
-    "tourze/file-storage-bundle": "0.0.*",
+    "tourze/file-storage-bundle": "1.0.*",
     "tourze/json-rpc-core": "1.0.*",
     "tourze/symfony-cron-job-bundle": "1.0.*",
     "tourze/symfony-dependency-service-loader": "1.*",
