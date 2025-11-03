@@ -18,6 +18,7 @@ use Tourze\RoutingAutoLoaderBundle\RoutingAutoLoaderBundle;
 use WechatMiniProgramBundle\WechatMiniProgramBundle;
 use WechatMiniProgramQrcodeLinkBundle\WechatMiniProgramQrcodeLinkBundle;
 use WeuiBundle\WeuiBundle;
+use Tourze\EasyAdminMenuBundle\EasyAdminMenuBundle;
 
 class WechatMiniProgramUrlLinkBundle extends Bundle implements BundleDependencyInterface
 {
@@ -38,6 +39,7 @@ class WechatMiniProgramUrlLinkBundle extends Bundle implements BundleDependencyI
             SecurityBundle::class => ['all' => true],
             RoutingAutoLoaderBundle::class => ['all' => true],
             FileStorageBundle::class => ['all' => true],
+            EasyAdminMenuBundle::class => ['all' => true],
         ];
     }
 }
