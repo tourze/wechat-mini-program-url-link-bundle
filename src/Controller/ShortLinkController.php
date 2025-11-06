@@ -9,10 +9,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Tourze\DoctrineAsyncInsertBundle\Service\AsyncInsertService as DoctrineService;
-use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Service\Client;
 use WechatMiniProgramUrlLinkBundle\Entity\PromotionCode;
 use WechatMiniProgramUrlLinkBundle\Entity\UrlLink;
+use WechatMiniProgramUrlLinkBundle\Service\AccountConverter;
+use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 use WechatMiniProgramUrlLinkBundle\Request\GenerateUrlLinkRequest;
 use WechatMiniProgramUrlLinkBundle\Service\PageService;
@@ -26,6 +27,7 @@ final class ShortLinkController extends AbstractController
     public function __construct(
         private readonly NoticeService $noticeService,
         private readonly PageService $pageService,
+        private readonly AccountConverter $accountConverter,
     ) {
     }
 
@@ -122,10 +124,12 @@ final class ShortLinkController extends AbstractController
 
     private function validateGenerateRequest(GenerateUrlLinkRequest $generateRequest, PromotionCode $code): ?Response
     {
-        $account = $code->getAccount();
-        if (!$account instanceof Account) {
+        $miniProgram = $code->getAccount();
+        if (!$this->accountConverter->isValidAccount($miniProgram)) {
             return $this->noticeService->weuiError('打开失败', '账户信息错误');
         }
+
+        $account = $this->accountConverter->toAccount($miniProgram);
         $generateRequest->setAccount($account);
 
         $envVersion = $code->getEnvVersion();

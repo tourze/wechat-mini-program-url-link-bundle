@@ -15,3 +15,5 @@ services:
     resource: '../../Repository/'
   WechatMiniProgramUrlLinkBundle\Service\:
     resource: '../../Service/'
+
+  # 配置参数绑定 - 移除环境变量依赖，使用构造函数默认值

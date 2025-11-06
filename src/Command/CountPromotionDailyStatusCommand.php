@@ -60,16 +60,20 @@ class CountPromotionDailyStatusCommand extends Command
                 $status = new DailyStatus();
                 $status->setCode($code);
                 $status->setDate($date);
+                $status->setTotal(0); // 初始化为0，避免null值问题
             }
 
             $totalValue = (int) $value['total'];
-            if ($totalValue > $status->getTotal()) {
+            $currentTotal = $status->getTotal() ?? 0; // 处理可能的null值
+            if ($totalValue > $currentTotal) {
                 $status->setTotal($totalValue);
                 $this->entityManager->persist($status);
-                $this->entityManager->flush();
-                $output->writeln("更新统计，{$code->getId()}, {$status->getTotal()}");
+                $output->writeln("更新统计，{$code->getId()}, {$totalValue}");
             }
         }
+
+        // 批量提交所有变更，提高性能
+        $this->entityManager->flush();
 
         return Command::SUCCESS;
     }

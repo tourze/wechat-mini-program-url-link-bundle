@@ -31,13 +31,21 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
     #[MethodParam(description: '码ID')]
     public int $id;
 
+    private string $indexPage;
+    private string $defaultPage;
+
     public function __construct(
         private readonly PromotionCodeRepository $promotionCodeRepository,
         private readonly DoctrineService $doctrineService,
         private readonly Security $security,
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger,
+        ?string $indexPage = null,
+        ?string $defaultPage = null,
     ) {
+        // 处理默认值
+        $this->indexPage = $indexPage ?? 'pages/index/index';
+        $this->defaultPage = $defaultPage ?? 'pages/index/index';
     }
 
     /**
@@ -96,9 +104,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
      */
     private function handleInvalidCode(PromotionCode $code, VisitLog $log): array
     {
-        $indexPage = $_ENV['WECHAT_MINI_PROGRAM_INDEX_PAGE'] ?? null;
-        $defaultPage = $_ENV['WECHAT_MINI_PROGRAM_DEFAULT_PAGE'] ?? null;
-        $finalPage = $indexPage ?? $defaultPage ?? 'pages/index/index';
+        $finalPage = $this->indexPage ? $this->indexPage : $this->defaultPage;
 
         $url = is_string($finalPage) ? $this->normalizeUrl($finalPage) : $this->normalizeUrl('pages/index/index');
 
@@ -172,6 +178,12 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
 
     private function normalizeUrl(string $url): string
     {
+        // 如果是完整URL（包含协议），直接返回
+        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            return $url;
+        }
+
+        // 对于相对路径，去掉前后斜杠后加上前导斜杠
         $url = trim($url, '/');
 
         return "/{$url}";

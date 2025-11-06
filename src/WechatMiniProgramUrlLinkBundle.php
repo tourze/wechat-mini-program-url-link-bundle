@@ -13,12 +13,12 @@ use Tourze\DoctrineSnowflakeBundle\DoctrineSnowflakeBundle;
 use Tourze\DoctrineTimestampBundle\DoctrineTimestampBundle;
 use Tourze\DoctrineTrackBundle\DoctrineTrackBundle;
 use Tourze\DoctrineUserBundle\DoctrineUserBundle;
+use Tourze\EasyAdminMenuBundle\EasyAdminMenuBundle;
 use Tourze\FileStorageBundle\FileStorageBundle;
 use Tourze\RoutingAutoLoaderBundle\RoutingAutoLoaderBundle;
 use WechatMiniProgramBundle\WechatMiniProgramBundle;
 use WechatMiniProgramQrcodeLinkBundle\WechatMiniProgramQrcodeLinkBundle;
 use WeuiBundle\WeuiBundle;
-use Tourze\EasyAdminMenuBundle\EasyAdminMenuBundle;
 
 class WechatMiniProgramUrlLinkBundle extends Bundle implements BundleDependencyInterface
 {

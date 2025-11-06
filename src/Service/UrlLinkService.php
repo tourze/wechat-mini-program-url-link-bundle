@@ -6,12 +6,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Attribute\WithMonologChannel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
-use WechatMiniProgramBundle\Entity\Account;
 use WechatMiniProgramBundle\Service\Client;
 use WechatMiniProgramUrlLinkBundle\Entity\UrlLink;
 use WechatMiniProgramUrlLinkBundle\Exception\InvalidAccountException;
 use WechatMiniProgramUrlLinkBundle\Exception\InvalidRequestParameterException;
 use WechatMiniProgramUrlLinkBundle\Request\QueryUrlLinkRequest;
+use Tourze\WechatMiniProgramAppIDContracts\MiniProgramInterface;
 
 #[Autoconfigure(public: true)]
 #[WithMonologChannel(channel: 'wechat_mini_program_url_link')]
@@ -21,6 +21,7 @@ readonly class UrlLinkService
         private LoggerInterface $logger,
         private EntityManagerInterface $entityManager,
         private Client $client,
+        private AccountConverter $accountConverter,
     ) {
     }
 
@@ -30,10 +31,12 @@ readonly class UrlLinkService
     public function apiCheck(UrlLink $urlLink): void
     {
         $request = new QueryUrlLinkRequest();
-        $account = $urlLink->getAccount();
-        if (!$account instanceof Account) {
+        $miniProgram = $urlLink->getAccount();
+        if (!$this->accountConverter->isValidAccount($miniProgram)) {
             throw new InvalidAccountException();
         }
+
+        $account = $this->accountConverter->toAccount($miniProgram);
         $request->setAccount($account);
         $urlLinkValue = $urlLink->getUrlLink();
         if (null === $urlLinkValue) {

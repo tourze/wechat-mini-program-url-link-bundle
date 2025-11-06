@@ -96,48 +96,102 @@ final class PromotionCodeCrudControllerTest extends AbstractEasyAdminControllerT
         $client = $this->createAuthenticatedClient();
         $client->catchExceptions(false);
 
+        // 基本断言：确保客户端创建成功
+        $this->assertNotNull($client, 'Client should be created successfully');
+
         try {
-            $crawler = $client->request('GET', $this->generateAdminUrl(Action::NEW));
-            $response = $client->getResponse();
-
-            if ($response->isSuccessful()) {
-                $this->assertResponseIsSuccessful();
-
-                $entityName = $this->getEntitySimpleName();
-                $form = $crawler->selectButton('Create')->form();
-
-                // 提交空表单以触发验证错误
-                $crawler = $client->submit($form, [
-                    $entityName . '[name]' => '',      // name 是必填字段
-                    $entityName . '[linkUrl]' => '',   // linkUrl 是必填字段
-                ]);
-
-                $validationResponse = $client->getResponse();
-
-                if (422 === $validationResponse->getStatusCode()) {
-                    $this->assertResponseStatusCodeSame(422);
-
-                    $invalidFeedback = $crawler->filter('.invalid-feedback');
-                    if ($invalidFeedback->count() > 0) {
-                        $this->assertStringContainsString('should not be blank', $invalidFeedback->text());
-                    }
-                } else {
-                    // 如果不是422错误，确保至少不是服务器错误
-                    $this->assertLessThan(500, $validationResponse->getStatusCode());
-                }
-            } elseif ($response->isRedirect()) {
-                self::markTestSkipped('NEW action redirected, likely due to authentication or authorization');
-            } else {
-                $this->assertLessThan(500, $response->getStatusCode());
-            }
+            $this->testNewPageResponse($client);
         } catch (\Exception $e) {
-            // 避免因为Docker连接等问题导致测试失败
-            $this->assertStringNotContainsString(
-                'doctrine_ping_connection',
-                $e->getMessage(),
-                'Should not fail with doctrine_ping_connection error'
+            $this->handleTestException($e);
+        }
+    }
+
+    /**
+     * 测试 NEW 页面响应行为
+     */
+    private function testNewPageResponse($client): void
+    {
+        $crawler = $client->request('GET', $this->generateAdminUrl(Action::NEW));
+        $response = $client->getResponse();
+
+        if ($response->isSuccessful()) {
+            $this->testSuccessfulNewPage($client, $crawler);
+        } elseif ($response->isRedirect()) {
+            $this->testRedirectBehavior($response);
+        } else {
+            $this->assertLessThan(500, $response->getStatusCode());
+        }
+    }
+
+    /**
+     * 测试成功访问 NEW 页面的表单验证
+     */
+    private function testSuccessfulNewPage($client, $crawler): void
+    {
+        $this->assertResponseIsSuccessful();
+        $entityName = $this->getEntitySimpleName();
+        $form = $crawler->selectButton('Create')->form();
+
+        // 提交空表单以触发验证错误
+        $crawler = $client->submit($form, [
+            $entityName . '[name]' => '',
+            $entityName . '[linkUrl]' => '',
+        ]);
+
+        $this->validateFormResponse($client, $crawler);
+    }
+
+    /**
+     * 验证表单提交响应
+     */
+    private function validateFormResponse($client, $crawler): void
+    {
+        $validationResponse = $client->getResponse();
+
+        if (422 === $validationResponse->getStatusCode()) {
+            $this->assertResponseStatusCodeSame(422);
+            $this->checkValidationFeedback($crawler);
+        } else {
+            $this->assertLessThan(500, $validationResponse->getStatusCode());
+        }
+    }
+
+    /**
+     * 检查验证错误反馈信息
+     */
+    private function checkValidationFeedback($crawler): void
+    {
+        $invalidFeedback = $crawler->filter('.invalid-feedback');
+        if ($invalidFeedback->count() > 0) {
+            $this->assertStringContainsString('should not be blank', $invalidFeedback->text());
+        }
+    }
+
+    /**
+     * 测试重定向行为
+     */
+    private function testRedirectBehavior($response): void
+    {
+        $this->assertTrue($response->isRedirect(), 'NEW action should redirect when authentication/authorization is required');
+        $location = $response->headers->get('Location');
+        if (null !== $location) {
+            $this->assertTrue(
+                str_contains($location, '/login') || str_contains($location, '/admin'),
+                'Redirect should go to login or admin page'
             );
         }
+    }
+
+    /**
+     * 处理测试异常
+     */
+    private function handleTestException(\Exception $e): void
+    {
+        $this->assertStringNotContainsString(
+            'doctrine_ping_connection',
+            $e->getMessage(),
+            'Should not fail with doctrine_ping_connection error'
+        );
     }
 
     /**

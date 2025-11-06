@@ -58,7 +58,7 @@ class UrlLink implements \Stringable
     private ?string $visitOpenId = null;
 
     #[IndexColumn]
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true, options: ['comment' => '是否已检查'])]
+    #[ORM\Column(type: Types::BOOLEAN, options: ['comment' => '是否已检查'])]
     #[Assert\Type(type: 'bool')]
     private bool $checked = false;
 
