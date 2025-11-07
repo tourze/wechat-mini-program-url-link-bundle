@@ -36,6 +36,7 @@ readonly class UrlLinkService
             throw new InvalidAccountException();
         }
 
+        assert($miniProgram !== null, 'isValidAccount check ensures miniProgram is not null');
         $account = $this->accountConverter->toAccount($miniProgram);
         $request->setAccount($account);
         $urlLinkValue = $urlLink->getUrlLink();

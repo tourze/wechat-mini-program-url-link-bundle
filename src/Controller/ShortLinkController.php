@@ -129,6 +129,7 @@ final class ShortLinkController extends AbstractController
             return $this->noticeService->weuiError('打开失败', '账户信息错误');
         }
 
+        assert($miniProgram !== null, 'isValidAccount check ensures miniProgram is not null');
         $account = $this->accountConverter->toAccount($miniProgram);
         $generateRequest->setAccount($account);
 

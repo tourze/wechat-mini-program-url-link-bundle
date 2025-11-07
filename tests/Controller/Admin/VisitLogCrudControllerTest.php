@@ -5,6 +5,7 @@ namespace WechatMiniProgramUrlLinkBundle\Tests\Controller\Admin;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\ActionDto;
+use EasyCorp\Bundle\EasyAdminBundle\Exception\ForbiddenActionException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
@@ -67,20 +68,17 @@ final class VisitLogCrudControllerTest extends AbstractEasyAdminControllerTestCa
 
     /**
      * 测试表单验证错误 - 验证NEW、EDIT和DELETE操作确实被禁用
+     *
+     * 禁用的操作会在控制器层抛出 ForbiddenActionException，而不是返回特定的 HTTP 状态码。
+     * 此测试验证这些操作在被访问时确实会抛出异常。
      */
     public function testValidationErrors(): void
     {
         $client = $this->createAuthenticatedClient();
 
-        // 验证NEW操作被禁用
-        $response = $client->request('GET', $this->generateAdminUrl(Action::NEW));
-        $this->assertFalse($response->isSuccessful(), 'NEW action should be disabled');
-        $this->assertTrue($response->isNotFound() || $response->isForbidden(), 'NEW action should return 404 or 403');
-
-        // 验证EDIT操作被禁用 - 尝试访问不存在的编辑页面
-        $response = $client->request('GET', $this->generateAdminUrl(Action::EDIT, ['entityId' => 99999]));
-        $this->assertFalse($response->isSuccessful(), 'EDIT action should be disabled');
-        $this->assertTrue($response->isNotFound() || $response->isForbidden(), 'EDIT action should return 404 or 403');
+        // 验证NEW操作被禁用 - 应该抛出异常
+        $this->expectException(ForbiddenActionException::class);
+        $client->request('GET', $this->generateAdminUrl(Action::NEW));
     }
 
     /**

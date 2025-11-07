@@ -7,6 +7,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\ActionDto;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\DomCrawler\Crawler;
+use Symfony\Component\HttpFoundation\Response;
 use Tourze\PHPUnitSymfonyWebTest\AbstractEasyAdminControllerTestCase;
 use WechatMiniProgramUrlLinkBundle\Controller\Admin\PromotionCodeCrudController;
 
@@ -109,7 +112,7 @@ final class PromotionCodeCrudControllerTest extends AbstractEasyAdminControllerT
     /**
      * 测试 NEW 页面响应行为
      */
-    private function testNewPageResponse($client): void
+    private function testNewPageResponse(KernelBrowser $client): void
     {
         $crawler = $client->request('GET', $this->generateAdminUrl(Action::NEW));
         $response = $client->getResponse();
@@ -126,7 +129,7 @@ final class PromotionCodeCrudControllerTest extends AbstractEasyAdminControllerT
     /**
      * 测试成功访问 NEW 页面的表单验证
      */
-    private function testSuccessfulNewPage($client, $crawler): void
+    private function testSuccessfulNewPage(KernelBrowser $client, Crawler $crawler): void
     {
         $this->assertResponseIsSuccessful();
         $entityName = $this->getEntitySimpleName();
@@ -144,7 +147,7 @@ final class PromotionCodeCrudControllerTest extends AbstractEasyAdminControllerT
     /**
      * 验证表单提交响应
      */
-    private function validateFormResponse($client, $crawler): void
+    private function validateFormResponse(KernelBrowser $client, Crawler $crawler): void
     {
         $validationResponse = $client->getResponse();
 
@@ -159,7 +162,7 @@ final class PromotionCodeCrudControllerTest extends AbstractEasyAdminControllerT
     /**
      * 检查验证错误反馈信息
      */
-    private function checkValidationFeedback($crawler): void
+    private function checkValidationFeedback(Crawler $crawler): void
     {
         $invalidFeedback = $crawler->filter('.invalid-feedback');
         if ($invalidFeedback->count() > 0) {
@@ -170,7 +173,7 @@ final class PromotionCodeCrudControllerTest extends AbstractEasyAdminControllerT
     /**
      * 测试重定向行为
      */
-    private function testRedirectBehavior($response): void
+    private function testRedirectBehavior(Response $response): void
     {
         $this->assertTrue($response->isRedirect(), 'NEW action should redirect when authentication/authorization is required');
         $location = $response->headers->get('Location');

@@ -32,7 +32,6 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
     public int $id;
 
     private string $indexPage;
-    private string $defaultPage;
 
     public function __construct(
         private readonly PromotionCodeRepository $promotionCodeRepository,
@@ -41,11 +40,9 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly LoggerInterface $logger,
         ?string $indexPage = null,
-        ?string $defaultPage = null,
     ) {
         // 处理默认值
         $this->indexPage = $indexPage ?? 'pages/index/index';
-        $this->defaultPage = $defaultPage ?? 'pages/index/index';
     }
 
     /**
@@ -104,9 +101,7 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
      */
     private function handleInvalidCode(PromotionCode $code, VisitLog $log): array
     {
-        $finalPage = $this->indexPage ? $this->indexPage : $this->defaultPage;
-
-        $url = is_string($finalPage) ? $this->normalizeUrl($finalPage) : $this->normalizeUrl('pages/index/index');
+        $url = $this->normalizeUrl($this->indexPage);
 
         $response = [
             'forceLogin' => $code->isForceLogin(),
