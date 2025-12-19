@@ -4,7 +4,7 @@ namespace WechatMiniProgramUrlLinkBundle\Tests\Procedure;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
-use Tourze\JsonRPC\Core\Tests\AbstractProcedureTestCase;
+use Tourze\PHPUnitJsonRPC\AbstractProcedureTestCase;
 use WechatMiniProgramUrlLinkBundle\Procedure\GetWechatMiniProgramPromotionCodeInfo;
 
 /**
@@ -32,7 +32,25 @@ final class NormalizeUrlTest extends AbstractProcedureTestCase
     {
         // 由于execute方法依赖多个服务和数据库，这里使用mock进行验证
         // 只验证方法能被调用，具体业务逻辑通过集成测试验证
-        $this->assertIsArray($this->procedure->execute());
+        $param = new \WechatMiniProgramUrlLinkBundle\Param\GetWechatMiniProgramPromotionCodeInfoParam(1);
+
+        // 配置mock对象返回预期结果
+        $expectedResult = new \Tourze\JsonRPC\Core\Result\ArrayResult([
+            'forceLogin' => false,
+            'url' => '/pages/index/index'
+        ]);
+
+        $this->procedure->expects($this->once())
+            ->method('execute')
+            ->with($param)
+            ->willReturn($expectedResult);
+
+        $result = $this->procedure->execute($param);
+        $this->assertInstanceOf(\Tourze\JsonRPC\Core\Result\ArrayResult::class, $result);
+        $this->assertArrayHasKey('forceLogin', $result);
+        $this->assertArrayHasKey('url', $result);
+        $this->assertFalse($result['forceLogin']);
+        $this->assertEquals('/pages/index/index', $result['url']);
     }
 
     /**

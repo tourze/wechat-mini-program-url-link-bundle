@@ -30,7 +30,7 @@ final class QueryUrlLinkResultCommandTest extends AbstractCommandTestCase
             $command = self::getContainer()->get(QueryUrlLinkResultCommand::class);
             $this->assertInstanceOf(QueryUrlLinkResultCommand::class, $command);
             $application = new Application();
-            $application->add($command);
+            $application->addCommand($command);
             $this->commandTester = new CommandTester($command);
         }
 
@@ -55,7 +55,7 @@ final class QueryUrlLinkResultCommandTest extends AbstractCommandTestCase
         $this->assertInstanceOf(QueryUrlLinkResultCommand::class, $command);
 
         $application = new Application();
-        $application->add($command);
+        $application->addCommand($command);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);

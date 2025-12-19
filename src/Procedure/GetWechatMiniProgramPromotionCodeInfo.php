@@ -10,14 +10,16 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Tourze\DoctrineAsyncInsertBundle\Service\AsyncInsertService as DoctrineService;
 use Tourze\JsonRPC\Core\Attribute\MethodDoc;
 use Tourze\JsonRPC\Core\Attribute\MethodExpose;
-use Tourze\JsonRPC\Core\Attribute\MethodParam;
 use Tourze\JsonRPC\Core\Attribute\MethodTag;
+use Tourze\JsonRPC\Core\Contracts\RpcParamInterface;
+use Tourze\JsonRPC\Core\Result\ArrayResult;
 use Tourze\JsonRPC\Core\Exception\ApiException;
 use Tourze\JsonRPC\Core\Procedure\BaseProcedure;
 use WechatMiniProgramBundle\Procedure\LaunchOptionsAware;
 use WechatMiniProgramUrlLinkBundle\Entity\PromotionCode;
 use WechatMiniProgramUrlLinkBundle\Entity\VisitLog;
 use WechatMiniProgramUrlLinkBundle\Event\PromotionCodeRequestEvent;
+use WechatMiniProgramUrlLinkBundle\Param\GetWechatMiniProgramPromotionCodeInfoParam;
 use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 
 #[MethodTag(name: '微信小程序')]
@@ -27,9 +29,6 @@ use WechatMiniProgramUrlLinkBundle\Repository\PromotionCodeRepository;
 class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
 {
     use LaunchOptionsAware;
-
-    #[MethodParam(description: '码ID')]
-    public int $id;
 
     private string $indexPage;
 
@@ -46,11 +45,11 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
     }
 
     /**
-     * @return array<string, mixed>
+     * @phpstan-param GetWechatMiniProgramPromotionCodeInfoParam $param
      */
-    public function execute(): array
+    public function execute(GetWechatMiniProgramPromotionCodeInfoParam|RpcParamInterface $param): ArrayResult
     {
-        $code = $this->findPromotionCode();
+        $code = $this->findPromotionCode($param->id);
         $this->validateCodeActivity($code);
 
         $log = $this->createVisitLog($code);
@@ -62,9 +61,9 @@ class GetWechatMiniProgramPromotionCodeInfo extends BaseProcedure
         return $this->handleValidCode($code, $log);
     }
 
-    private function findPromotionCode(): PromotionCode
+    private function findPromotionCode(int $id): PromotionCode
     {
-        $code = $this->promotionCodeRepository->find($this->id);
+        $code = $this->promotionCodeRepository->find($id);
         if (null === $code) {
             throw new ApiException('找不到推广码');
         }

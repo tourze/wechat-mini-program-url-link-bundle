@@ -29,7 +29,7 @@ final class CountPromotionDailyStatusCommandTest extends AbstractCommandTestCase
             $command = self::getContainer()->get(CountPromotionDailyStatusCommand::class);
             $this->assertInstanceOf(CountPromotionDailyStatusCommand::class, $command);
             $application = new Application();
-            $application->add($command);
+            $application->addCommand($command);
             $this->commandTester = new CommandTester($command);
         }
 
@@ -50,7 +50,7 @@ final class CountPromotionDailyStatusCommandTest extends AbstractCommandTestCase
         $this->assertInstanceOf(CountPromotionDailyStatusCommand::class, $command);
 
         $application = new Application();
-        $application->add($command);
+        $application->addCommand($command);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
