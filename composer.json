@@ -49,7 +49,7 @@
     "tourze/easy-admin-menu-bundle": "1.0.*",
     "tourze/file-storage-bundle": "1.1.*",
     "tourze/json-rpc-core": "2.0.*",
-    "tourze/symfony-cron-job-bundle": "1.1.*",
+    "tourze/symfony-cron-job-bundle": "1.2.*",
     "tourze/symfony-dependency-service-loader": "1.0.*",
     "tourze/symfony-routing-auto-loader-bundle": "1.0.*",
     "tourze/symfony-schedule-entity-clean-bundle": "1.1.*",
